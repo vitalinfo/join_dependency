@@ -56,7 +56,11 @@ module JoinDependency
         end
       elsif at_least?(5, 2, 1)
         alias_tracker = ::ActiveRecord::Associations::AliasTracker.create(relation.klass.connection, relation.table.name, join_list)
-        join_dependency = ::ActiveRecord::Associations::JoinDependency.new(relation.klass, relation.table, association_joins)
+        join_dependency = if at_least?(6, 0, 0)
+                            ::ActiveRecord::Associations::JoinDependency.new(relation.klass, relation.table, association_joins, Arel::Nodes::OuterJoin)
+                          else
+                            ::ActiveRecord::Associations::JoinDependency.new(relation.klass, relation.table, association_joins)
+                          end
         join_dependency.instance_variable_set(:@alias_tracker, alias_tracker)
         join_nodes.each do |join|
           join_dependency.send(:alias_tracker).aliases[join.left.name.downcase] = 1
